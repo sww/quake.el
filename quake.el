@@ -40,7 +40,7 @@
   :group 'quake)
 
 (defun quake ()
-  "Provies Quake-like buffer splits."
+  "Provides Quake-like buffer splits."
   (interactive)
   (defvar running-buffer-name)
 
