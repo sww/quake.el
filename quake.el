@@ -4,7 +4,7 @@
 ;; Author: Sean Wang
 ;; URL: http://github.com/sww/quake.el
 ;; Created: 2018
-;; Version: 0.1
+;; Version: 0.2
 ;; Keywords: console
 ;; Package-Requires:
 
@@ -14,6 +14,8 @@
 ;;
 ;; Provides functions for quick access to a console buffer.
 ;; (bind-key "C-`" 'quake)
+;;
+;; Use a prefix argument to specify a buffer to show in the split.
 
 ;;; Code:
 
@@ -45,31 +47,42 @@
   :group 'quake)
 
 (defcustom quake-buffer-name "quake"
-  "The buffer name."
+  "The default buffer name."
   :type 'string
   :group 'quake)
+
+(defun quake--get-buffer-name ()
+  (if current-prefix-arg
+      (quake--select-buffer-name)
+    quake-buffer-name))
+
+(defun quake--select-buffer-name ()
+  (let ((buffer-name "")
+        (current quake-buffer-name))
+    (completing-read "Buffer: " (mapcar (function buffer-name) (buffer-list)) nil t)))
 
 (defun quake ()
   "Provides Quake-like buffer splits."
   (interactive)
-  (let (height-or-width quake-split-size)
+  (let (buffer-name height-or-width quake-split-size)
+    (setq buffer-name (quake--get-buffer-name))
     (setq height-or-width (if (member quake-window-position '(below above))
                               (frame-height)
                             (frame-width)))
     (setq quake-split-size (- height-or-width (floor (* height-or-width quake-max-window-size))))
 
-    (if (get-buffer-window quake-buffer-name)
+    (if (get-buffer-window buffer-name)
         ;; Probably already ran the function, so hide the frame.
-        (delete-window (get-buffer-window quake-buffer-name))
+        (delete-window (get-buffer-window buffer-name))
 
       ;; Create the window split.
       (select-window (split-window (frame-root-window) quake-split-size))
 
       ;; Check if a shell buffer exists already, or create one.
-      (if (get-buffer quake-buffer-name)
-          (switch-to-buffer (get-buffer quake-buffer-name))
+      (if (get-buffer buffer-name)
+          (switch-to-buffer (get-buffer buffer-name))
         (funcall quake-term-function quake-term-args)
-        (rename-buffer quake-buffer-name)))))
+        (rename-buffer buffer-name)))))
 
 (provide 'quake)
 ;;; quake.el ends here
