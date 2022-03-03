@@ -62,7 +62,9 @@
         (current quake-buffer-name))
     (completing-read (format "Select new quake buffer (current: %s): " quake-buffer-name)
                      (mapcar (function buffer-name)
-                             (buffer-list)) nil t)))
+                             (buffer-list))
+                     nil
+                     t)))
 
 (defun quake--set-current-buffer-as-quake-buffer ()
   "Set the current buffer as the quake buffer."
