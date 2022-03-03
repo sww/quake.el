@@ -52,9 +52,9 @@
   :group 'quake)
 
 (defun quake--get-buffer-name ()
-  (if current-prefix-arg
-      (quake--select-buffer-name)
-    quake-buffer-name))
+  "Get or set a new quake-buffer-name."
+  (when current-prefix-arg (setq quake-buffer-name (quake--select-buffer-name)))
+  quake-buffer-name)
 
 (defun quake--select-buffer-name ()
   "Select which buffer to set as the quake buffer."
