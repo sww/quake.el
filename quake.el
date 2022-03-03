@@ -82,7 +82,7 @@
     (setq quake-split-size (- height-or-width (floor (* height-or-width quake-max-window-size))))
 
     (if (get-buffer-window buffer-name)
-        ;; Probably already ran the function, so hide the frame.
+        ;; Probably already ran the function, so hide the window.
         (delete-window (get-buffer-window buffer-name))
 
       ;; Create the window split.
