@@ -1,10 +1,10 @@
 ;;; quake.el --- Provides functions for quick access to a console buffer.
 
-;; Copyright (C) 2018 Sean Wang
+;; Copyright (C) 2018-2022 Sean Wang
 ;; Author: Sean Wang
 ;; URL: http://github.com/sww/quake.el
 ;; Created: 2018
-;; Version: 0.2
+;; Version: 0.3
 ;; Keywords: console
 ;; Package-Requires:
 
@@ -12,7 +12,7 @@
 ;;
 ;;; Commentary:
 ;;
-;; Provides functions for quick access to a console buffer.
+;; Provides functions for quick split access to a buffer.
 ;; (bind-key "C-`" 'quake)
 ;;
 ;; Use a prefix argument to specify a buffer to show in the split.
@@ -20,7 +20,7 @@
 ;;; Code:
 
 (defgroup quake nil
-  "Provides quick console access."
+  "Provides quick split buffer access."
   :group 'tools)
 
 (defcustom quake-window-position 'below
@@ -71,27 +71,34 @@
   (setq quake-buffer-name (current-buffer)))
 
 (defun quake ()
-  "Provides Quake-like buffer splits."
+  "Provides quick access to a split buffer."
   (interactive)
-  (let (buffer-name height-or-width quake-split-size)
-    (setq buffer-name (quake--get-buffer-name))
-    (setq height-or-width (if (member quake-window-position '(below above))
-                              (frame-height)
-                            (frame-width)))
-    (setq quake-split-size (- height-or-width (floor (* height-or-width quake-max-window-size))))
+  (let* ((size-func (if (member quake-window-position '(below above))
+                        'window-total-height
+                      'window-total-width))
+         (frame-height-or-width (funcall size-func (frame-root-window)))
+         (quake-buffer-name (quake--get-buffer-name))
+         (quake-buffer (get-buffer quake-buffer-name))
+         (quake-window (get-buffer-window quake-buffer-name))
+         (quake-split-size)
+         (quake-window-size))
 
-    (if (get-buffer-window buffer-name)
-        ;; Probably already ran the function, so hide the window.
-        (delete-window (get-buffer-window buffer-name))
+    (cond (quake-window
+           ;; Probably already ran the function, so remember the size and hide the window.
+           (setq quake-window-size (funcall size-func quake-window))
+           (setq quake-max-window-size (/ quake-window-size (float frame-height-or-width)))
+           (delete-window quake-window))
 
-      ;; Create the window split.
-      (select-window (split-window (frame-root-window) quake-split-size))
+          (t
+           (setq quake-split-size (- frame-height-or-width (floor (* frame-height-or-width quake-max-window-size))))
+           ;; Create the window split.
+           (select-window (split-window (frame-root-window) quake-split-size quake-window-position))
 
-      ;; Check if a shell buffer exists already, or create one.
-      (if (get-buffer buffer-name)
-          (switch-to-buffer (get-buffer buffer-name))
-        (funcall quake-term-function quake-term-args)
-        (rename-buffer buffer-name)))))
+           ;; Check if the buffer exists already, otherwise create a shell session.
+           (if quake-buffer
+               (switch-to-buffer quake-buffer)
+             (funcall quake-term-function quake-term-args)
+             (rename-buffer quake--get-buffer-name))))))
 
 (provide 'quake)
 ;;; quake.el ends here
