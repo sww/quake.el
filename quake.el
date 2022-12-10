@@ -58,8 +58,7 @@
 
 (defun quake--select-buffer-name ()
   "Select which buffer to set as the quake buffer."
-  (let ((buffer-name "")
-        (current quake-buffer-name))
+  (let (buffer-name)
     (completing-read (format "Select new quake buffer (current: %s): " quake-buffer-name)
                      (mapcar (function buffer-name)
                              (buffer-list))
