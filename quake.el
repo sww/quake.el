@@ -6,7 +6,7 @@
 ;; Created: 2018
 ;; Version: 0.3
 ;; Keywords: console
-;; Package-Requires:
+;; Package-Requires: ((emacs "26.1"))
 
 ;; This file is NOT part of GNU Emacs.
 ;;
